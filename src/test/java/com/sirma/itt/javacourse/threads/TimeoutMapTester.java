@@ -21,7 +21,7 @@ public final class TimeoutMapTester {
 	 */
 	public static void main(String[] args) throws InterruptedException {
 		// set a hashable with a timeout of 2 sec for the test
-		TimeoutHashtable map = new TimeoutHashtable(2);
+		TimeoutHashtable map = new TimeoutHashtable(2000L);
 		map.put("Ivan", 1);
 		map.put("Dragan", 2);
 		map.put("Pesho", 3);
@@ -33,13 +33,16 @@ public final class TimeoutMapTester {
 		// the time for Pesho gets reset by the request and it stays in the
 		// hashtable 1 sec more
 		map.get("Pesho");
-		Thread.sleep(1000);
+		Thread.sleep(1200);
 		// should display just Pesho
-		System.out.println("The map after waiting for 2.0 sec:");
+		System.out.println("The map after waiting for 2.2 sec:");
 		map.printMe();
 		Thread.sleep(1000);
 		// now it should be completely empty
 		System.out.println("The map after waiting for 3.0 sec:");
+		map.printMe();
+		Thread.sleep(2000);
+		System.out.println("The map after waiting for 5.0 sec:");
 		map.printMe();
 	}
 }

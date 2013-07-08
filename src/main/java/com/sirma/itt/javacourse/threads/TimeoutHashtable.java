@@ -11,43 +11,33 @@ import java.util.Queue;
  * used during that time, they get deleted by the appropriate timer thread.
  */
 public class TimeoutHashtable {
-	private final int timeout;
-	private int globalCounter;
-	private final Map<String, Object> map = new HashMap<String, Object>();
-	private final Map<String, Integer> mapTimes = new HashMap<String, Integer>();
+	private final long timeout;
+	private volatile Map<String, Object> map = new HashMap<String, Object>();
+	private volatile Map<String, Long> mapTimes = new HashMap<String, Long>();
 
 	/**
 	 * Constructs the hashtable with an initial timeout amount.
 	 * 
 	 * @param timeout
-	 *            is the amount of time in seconds that each key-value pair will
-	 *            stay in the hashtable, if it is not retrieved.
+	 *            is the amount of time in milliseconds that each key-value pair
+	 *            will stay in the hashtable, if it is not retrieved.
 	 */
-	public TimeoutHashtable(int timeout) {
+	public TimeoutHashtable(long timeout) {
 		this.timeout = timeout;
-		globalCounter = 0;
 		new Timer();
-	}
-
-	/**
-	 * Increments the global counter by one and invokes the checkTimeouts
-	 * method.
-	 */
-	private void incrementGlobalCounter() {
-		globalCounter++;
-		checkTimeouts();
 	}
 
 	/**
 	 * Iterates over the times hashmap and removes the expired keys, if any.
 	 */
 	private void checkTimeouts() {
+		// System.out.println("Checking timeouts...");
 		// the expired keys are first stored in a Queue and then removed
 		// in order to avoid ConcurrentModificationException while iterating
 		// over the hahsmap
 		Queue<String> keysToRemove = new LinkedList<String>();
 		for (String key : mapTimes.keySet()) {
-			if (mapTimes.get(key) == globalCounter) {
+			if (mapTimes.get(key) < System.currentTimeMillis()) {
 				keysToRemove.add(key);
 			}
 		}
@@ -68,7 +58,7 @@ public class TimeoutHashtable {
 	 */
 	public void put(String key, Object value) {
 		map.put(key, value);
-		mapTimes.put(key, globalCounter + timeout);
+		mapTimes.put(key, System.currentTimeMillis() + timeout);
 	}
 
 	/**
@@ -79,8 +69,12 @@ public class TimeoutHashtable {
 	 * @return the value coresponding to the given key
 	 */
 	public Object get(String key) {
-		mapTimes.put(key, globalCounter + timeout);
-		return map.get(key);
+		if (mapTimes.get(key) < System.currentTimeMillis()) {
+			return null;
+		} else {
+			mapTimes.put(key, System.currentTimeMillis() + timeout);
+			return map.get(key);
+		}
 	}
 
 	/**
@@ -116,6 +110,7 @@ public class TimeoutHashtable {
 		public Timer() {
 			start();
 		}
+
 		/**
 		 * main thread logic here.
 		 */
@@ -125,7 +120,7 @@ public class TimeoutHashtable {
 				if (mapTimes.size() == 0) {
 					return;
 				}
-				incrementGlobalCounter();
+				checkTimeouts();
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {

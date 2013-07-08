@@ -3,11 +3,11 @@ package com.sirma.itt.javacourse.threads;
 /**
  * Tests the two counter threads.
  */
-public final class CountersTester {
+public final class EntangledCounterTester {
 	/**
 	 * A private constrcutor.
 	 */
-	private CountersTester() {
+	private EntangledCounterTester() {
 	}
 
 	/**
@@ -18,8 +18,10 @@ public final class CountersTester {
 	 *            are the cmd args
 	 */
 	public static void main(String[] args) {
-		Counters testTimer1 = new Counters(0, 8000, null, "Timer1");
-		Counters testTimer2 = new Counters(0, 8300, null, "Timer2");
+		EntangledCounter testTimer1 = new EntangledCounter(0, 8000, null,
+				"Timer1");
+		EntangledCounter testTimer2 = new EntangledCounter(0, 8300, null,
+				"Timer2");
 		testTimer1.setOther(testTimer2);
 		testTimer2.setOther(testTimer1);
 		new Thread(testTimer1).start();

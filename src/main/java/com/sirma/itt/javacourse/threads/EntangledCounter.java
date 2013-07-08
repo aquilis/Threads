@@ -1,13 +1,13 @@
 package com.sirma.itt.javacourse.threads;
 
 /**
- * Counts from the start time to the end time and when the counting is done,
- * interrupts the specified other thread to stop it.
+ * A counter thread which is entangled with another one. If the thread
+ * successfully counts to its end time, it stops the other, or vice versa.
  */
-public class Counters implements Runnable {
+public class EntangledCounter implements Runnable {
 	private final int start;
 	private final int end;
-	private Counters other;
+	private EntangledCounter other;
 	private final String name;
 	private boolean mustStop;
 
@@ -17,7 +17,7 @@ public class Counters implements Runnable {
 	 * @param other
 	 *            is the timer instance to set
 	 */
-	public void setOther(Counters other) {
+	public void setOther(EntangledCounter other) {
 		this.other = other;
 	}
 
@@ -43,13 +43,13 @@ public class Counters implements Runnable {
 	 * @param name
 	 *            is the name of the current timer
 	 */
-	public Counters(int start, int end, Counters other, String name) {
+	public EntangledCounter(int start, int end, EntangledCounter other,
+			String name) {
 		this.start = start;
 		this.end = end;
 		this.other = other;
 		this.name = name;
 	}
-
 	@Override
 	public synchronized void run() {
 		for (int i = start; i <= end; i++) {
